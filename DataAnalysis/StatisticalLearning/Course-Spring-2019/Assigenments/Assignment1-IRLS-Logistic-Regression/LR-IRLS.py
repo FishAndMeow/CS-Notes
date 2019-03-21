@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sat Mar 16 18:43:06 2019
-
 @author: feiyuxiao
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_svmlight_file
-from scipy.sparse import csr_matrix
-
+from sklearn.model_selection import train_test_split
 
 def loadData(filename):
     X,Y = load_svmlight_file(filename)
@@ -18,38 +16,23 @@ def loadData(filename):
     Y = (Y+1)/2
     for y in Y:
         y = round(y)   # to resize to {0,1}  
-    #print("data load",type(X),type(Y))
     return X,Y
 
 
 def sigmoid(x):
     return 1.0/(1.0+np.exp(-x))
-    
-def SparseMatrixMultiply(A, B):#减少计算次数
-    AA = csr_matrix(A)
-   # BB = csr_matrix(B)
-    res = AA.dot(B)
-    return res
-
-def diagMatrixMultiply(A,D): # D 是对角阵
-    m = A.shape[1]
-    for i in range(m):
-        A[:,i] =  A[:,i]*D[i]
-    return A
-
-def simplymultiply(A,B):
-    C = np.zeros(A.shape[0])
-    for i in range(A.shape[0]):
-        C[i] = A[i]*B[i]
-    return C
 
 
-def IRLS (dataX,datalabel,Lambda,epsilon = 0.00001,max_iter = 30):
+def IRLS (dataX,datalabel,Lambda,epsilon = 0.00001,max_iter = 20):
     m,n = np.shape(dataX)
        
     ratios = np.zeros(n)
     
     times_iter = 0
+    
+    w_norm = [0] # 
+    
+    w_error_norm = []
     
     for x in range(max_iter):
         temp0 =dataX.dot(ratios)
@@ -60,25 +43,29 @@ def IRLS (dataX,datalabel,Lambda,epsilon = 0.00001,max_iter = 30):
         Rnn = np.diag(R)
         
         matrix0 = dataX.transpose().dot(Rnn)
-        temp1 = matrix0.dot(dataX)
-        matrix1 = np.linalg.inv(temp1+Lambda*np.eye(n,n))
+     
+        matrix1 = matrix0.dot(dataX)+Lambda*np.eye(n,n)
+         
+        matrix2 = matrix0.dot(temp0+ (datalabel-Y)/R)
+        ratios_update = np.linalg.solve(matrix1,matrix2)
         
-        temp2 = temp0+ (datalabel-Y)/R
-       
-        ratios_update = matrix1.dot(matrix0).dot(temp2)
-
+        wnorm = np.linalg.norm(ratios_update)
+        w_norm.append(wnorm)
+        
         error = ratios_update - ratios
         error_norm = np.linalg.norm(error)
+        w_error_norm.append(error_norm)
+        
         ratios = ratios_update
-        print("error",error_norm)
+        
         if error_norm < epsilon:
             break
         ratios = ratios_update    
         
         times_iter += 1
-    return ratios,times_iter #,results
+    return ratios,times_iter,w_norm,w_error_norm #,results
    
-def accuray(dataX,datalabel,weights_pre):
+def accuracy(dataX,datalabel,weights_pre):
     y_pre = np.zeros(datalabel.shape[0])
     y_pre = sigmoid(dataX.dot(weights_pre))
     flag = 0
@@ -91,13 +78,21 @@ def accuray(dataX,datalabel,weights_pre):
     return accuracy_score    
 
 # main
-#file_train = "a9a"
 file_train = "a9a/a9a"
 file_test = "a9a/a9a.t"
 
 
-X_train , y_train = loadData(file_train)
+train , target = loadData(file_train)
 X_test , y_test = loadData(file_test)
+
+#train = train[:5000,:]
+#target = target[:5000]
+
+
+X_train,test_x, train_y, test_y = train_test_split(train,
+                                                   target,
+                                                   test_size = 0.2,
+                                                   random_state = 0)
 
 row_xtest = X_test.shape[0]
 
@@ -105,37 +100,59 @@ line = np.zeros(row_xtest)
 
 X_test = np.column_stack((X_test,line))
 
-#lambda_list = [0.01,0.05,0.1,0.2]
-lambda_list = [0.01]
+lambda_list = [0.01,0.1,0.5,1]
+
 ratios = []
 accuracy_train = []
 accuracy_test = []
 time = []
-epsilon = 0.1
+w_norm=[]
+w_error_norm=[]
+epsilon = 0.00001
 max_iter = 20
 
+print("Training for weights")  
 for Lambda in lambda_list:    
-    ratio,_time = IRLS(X_train,y_train,Lambda)
+    ratio,_time,wnorm,werrornorm = IRLS(X_train,train_y,Lambda)
+    w_norm.append(wnorm)
+    w_error_norm.append(werrornorm)
     ratios.append(ratio)
     time.append(_time)
-    accuracy_score_train = accuray(X_train,y_train,ratio)
-    accuracy_train.append(accuracy_score_train)
-    accuracy_score_test = accuray(X_test,y_test,ratio)       
+    accuracy_score_test = accuracy(test_x,test_y,ratio)       
     accuracy_test.append(accuracy_score_test)
 
+
 chioce_Lambda = accuracy_test.index(max(accuracy_test)) 
-  
+accuracy_final = accuracy(X_test , y_test,ratios[chioce_Lambda]) 
+ 
 print("finished")
-#print('iteration times',times)
-print("Best lambda",lambda_list[chioce_Lambda])
-print(accuracy_train[chioce_Lambda])  
-print(accuracy_test[chioce_Lambda])
+print("Best lambda",lambda_list[chioce_Lambda],"accuracy",accuracy_test[chioce_Lambda])
+print("Accuracy in test set",accuracy_final)
 
 plt.figure()
-plt.plot(lambda_list,time)
+plt.plot(lambda_list,time,"o-")
+plt.xlabel("Lambda")
+plt.ylabel("times")
+plt.title("Literation times")
+plt.savefig("1.png",dpi=200)
 
 plt.figure()
-plt.plot(lambda_list,accuracy_train)
+plt.plot(w_norm[chioce_Lambda],"o-")
+plt.xlabel("Iteration")
+plt.ylabel("w_norm")
+plt.title("weights norm")
+plt.savefig("2.png",dpi=200)
 
 plt.figure()
-plt.plot(lambda_list,accuracy_test)
+plt.plot(w_error_norm[chioce_Lambda],"o-")
+plt.xlabel("Iteration")
+plt.ylabel("w_error_norm")
+plt.title("weights error norm")
+plt.savefig("3.png",dpi=200)
+
+plt.figure()
+plt.plot(lambda_list,accuracy_test,"o-")
+plt.xlabel("Lambda")
+plt.ylabel("accuracy")
+plt.title("Prediction Accuracy")
+plt.savefig("4.png",dpi=200)
