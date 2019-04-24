@@ -8,6 +8,7 @@
 
 Hard SVM 
 
+<<<<<<< HEAD
 原始的优化问题为：
 $$
 \begin{array}{ll}{\min _{w, b}} & {\frac{1}{2}\|w\|^{2}} \\ {\text { s.t. }} & {y_{i}\left(w \cdot x_{i}+b\right)-1 \geqslant 0, \quad i=1,2, \cdots, N}\end{array}
@@ -72,6 +73,11 @@ $$
 
 训练数据中对应 $\alpha^{\star}>0$的点才会对结果产生影响，这些点就是支持向量
 
+=======
++ If the data is not linearly separable, adding new features might make it linearly separable 
++ Soft margin SVM instead of hard SVM 
+
+>>>>>>> f5bea4e7e85d92e6c6aa7fa601671bcdb16129fd
 Approximation of the step function 
 
 + 0-1 Loss
@@ -84,8 +90,11 @@ Approximation of 0/1 loss
 + Quadratic approximation(square-loss)
 + Huber loss(combine the above two)
 
+<<<<<<< HEAD
 ![1](C:\Users\feiyuxiao\Desktop\1.png) 
 
+=======
+>>>>>>> f5bea4e7e85d92e6c6aa7fa601671bcdb16129fd
 **The Primal Soft SVM problem**
 $$
 \hat{\mathbf{w}}=\arg \min _{\mathbf{w}} \frac{\lambda}{2}\|\mathbf{w}\|^{2}+\sum_{i=1}^{N} \xi_{i}
@@ -194,11 +203,14 @@ Resampling
 
 **Naive Bayes Classifier**
 
+<<<<<<< HEAD
 朴素贝叶斯分类是典型的**生成学习方法**，其基本假设是**条件独立性** 
 $$
 \begin{aligned} P(X&=x | Y=c_{k} )=P\left(X^{(1)}=x^{(1)}, \cdots, X^{(n)}=x^{(n)} | Y=c_{k}\right) \\ &=\prod_{j=1}^{n} P\left(X^{(j)}=x^{(j)} | Y=c_{k}\right) \end{aligned}
 $$
 
+=======
+>>>>>>> f5bea4e7e85d92e6c6aa7fa601671bcdb16129fd
 + Naive Bayes assumption : features $X_{1}, \ldots, X_{d}$ are conditionally independent given the class label $Y$
 
 A joint distribution:  $p(\mathrm{x}, y)=p(y) p(\mathrm{x} | y)$
@@ -232,6 +244,7 @@ $$
 $$
 $\alpha > 0$
 
+<<<<<<< HEAD
 **A Bayesian Treatment**
 
 Put a prior on the parameters
@@ -251,6 +264,8 @@ If $\alpha_1 = \alpha_2 = 1$, no effect:
 
 **MLE is a special case of Bayesian estimate** 
 
+=======
+>>>>>>> f5bea4e7e85d92e6c6aa7fa601671bcdb16129fd
 **Gaussian Naive Bayes**(GNB)
 
 Different mean and variance for each class k and each feature i 
@@ -277,8 +292,11 @@ Discriminative classifiers  (Example: Logistic regression)
 + Assume some functional form for  $P(Y|X)$
 + Estimate parameters of  $p(Y|X)$ directly from training data
 
+<<<<<<< HEAD
 对于生成方法，可以还原出联合概率分布，其学习收敛速率更快，即当样本容量增加的时候，模型可以更快地收敛于真实模型，当存在隐变量时，依然可以用生成方法学习；对于判别方法，其直接学习的是条件概率或者决策函数，往往其准确率更高，可以对数据进行各种程度上的抽象，定义特征并使用特征，从而可以简化学习问题。
 
+=======
+>>>>>>> f5bea4e7e85d92e6c6aa7fa601671bcdb16129fd
 ### Logistic Regression
 
 Assume
@@ -337,6 +355,7 @@ Boosting > Random Forests > Bagging > Single Tree
 
 **AdaBoost**
 
+<<<<<<< HEAD
 AdaBoost 模型是弱分类器的线性组合：
 $$
 f(x) = \sum_{m=1}^M \alpha_m G_m(x)
@@ -345,6 +364,8 @@ $$
 
 AdaBoost 的每次迭代可以减小其在训练集上的分类误差率。
 
+=======
+>>>>>>> f5bea4e7e85d92e6c6aa7fa601671bcdb16129fd
 ![](https://i.loli.net/2019/04/21/5cbbda48ed596.png)
 
 **Stage-wise Additive Modeling**
@@ -530,12 +551,15 @@ Maximize the lower bound or minimize the gap :
 
 The EM algorithm for GMM reduces to K-Means under certain conditions
 
+<<<<<<< HEAD
 EM算法在每次迭代后均提高观测数据的似然函数值，即
 $$
 P(Y|\theta^{(i+1)}) \geq P(Y|\theta^{(i)})
 $$
 在一般条件下 EM 算法是收敛的，但不能保证收敛到全局最优解。
 
+=======
+>>>>>>> f5bea4e7e85d92e6c6aa7fa601671bcdb16129fd
 ## Unsupervised Learning (II) Dimension Reduction 
 ### PCA: Principal Component Analysis 
 
