@@ -9,6 +9,30 @@ Created on Sun Apr 14 17:47:52 2019
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.special import logsumexp
+import time
+
+def loadData(libfilepath, vocfilepath):
+    print("Loading data......")
+    X = []
+    #Loading word file
+    wordDict = {}
+    vocfile = open(vocfilepath,"r")
+    for line in vocfile.readlines():
+        words = line.split('\t')
+        wordDict[int(words[0])] = words[1]
+    vocfile.close()
+    # Loading lib file
+    wordSize = len(wordDict)
+    libfile = open(libfilepath,"r")
+    for line in libfile.readlines():
+        doc = np.zeros(wordSize, dtype='float')
+        words = line.strip().split('\t')[1].split(" ")
+        for word in words:
+            word = word.split(":")
+            doc[int(word[0])] = int(word[1])
+        X.append(doc)
+    libfile.close()
+    return np.asarray(X), wordDict
 
 def preprocessor(datasetname,vocabname):
 
@@ -48,20 +72,47 @@ def preprocessor(datasetname,vocabname):
     
     return voc,T
 
-
-def Frequent_words(log_mu, vocabulary, topN=20):
+def printResults(mu_log, wordDict,NumMostFrequent=10):
+    U = mu_log.transpose()
+    (K,W)=U.shape
+    print("Ushape",U.shape)
+    #NumMostFrequent =5
+    word = [[] for i in range(K)]
+    #f = file('./nips/output.txt', 'w+')
+    print("The K is: %d" %(K))
+    for i in range(K):
+        #print "The cluster %d\'s ratio is %f, most-frequent %d words are: " % (i+1, self.PI[i], num)
+        #print>>f, "The cluster %d\'s ratio is %f, most-frequent %d words are: " % (i+1, self.PI[i], num)
+        list = []
+        for j in range(W):
+            list.append((U[i,j],j))
+        list.sort(key=lambda x:x[0], reverse=True)
+        print("-"*50)
+        print('Frequent words of topic {}:'.format(i))
+        for j in range(NumMostFrequent):
+            word[i].append(wordDict[list[j][1]])
+            #print(wordDict[list[j][1]])
+            #print>>f, dataset.voc_dict[list[j][1]]
+        print(word[i])
+        print("")
+      
+        
+def Frequent_words(mu_log, vocabulary, Num=10):
     """
     args:
         log_mu: numpy array of shape (num_words, num_topics)
     """
-    num_words, num_mixtures = log_mu.shape
-    top_words_idx = np.argpartition(log_mu, -topN, axis=0)[-topN:]
-    print(top_words_idx)
-    print(top_words_idx.shape)
-    for topic_id in range(num_mixtures):
-        print("-"*80)
-        print('Frequent words of topic {}:'.format(topic_id))
-        words = [voc[word_idx][1] for word_idx in top_words_idx[topic_id]]
+    topics_number = mu_log.shape[1]
+    mu = np.exp(mu_log)
+    print(mu.shape)
+    frequent_words_list = np.argpartition(mu, -Num, axis=0)[-Num:]
+    print("frequent_words_list[doc]")
+    print(frequent_words_list.shape)
+    for doc in range(topics_number):
+        print("-"*50)
+        print('Frequent words of topic {}:'.format(doc))
+        print(frequent_words_list[doc])
+        words = [voc[id][1] for id in  frequent_words_list[doc]]
         print(' '.join(words))
 
 def freqvisual(T):
@@ -107,7 +158,7 @@ class EM():
     '''
         word_matrix: word occurrence matrix for the corpus
     '''
-    def __init__(self,topics_number = 20,error = 0.1):
+    def __init__(self,topics_number = 10,error = 0.0000001):
         self.topics_number = topics_number
         self.pi = None
         self.mu = None
@@ -180,6 +231,7 @@ class EM():
         likehood_old =  self.cal_likehood()
         likehood_change = np.infty
         iteration = 0
+        #Nd = np.sum(self.word_matrix, axis=0)
         print("main")
         print('Tolerance',self.er)
         #print(likehood_change)
@@ -190,23 +242,28 @@ class EM():
             self.Maximization()
             #pi_log = self.pi_log
             mu_log = self.mu_log
+            #print("shape",mu_log.shape)
             likehood_new = self.cal_likehood()
             likehood_change = likehood_new - likehood_old
             likehood_old = likehood_new
             
             iteration +=1
-            
+            #mu = np.exp(mu_log)
+            #U = (self.word_matrix.dot(mu) / np.sum(mu.transpose() * Nd, axis=1)).transpose()
             print("training",iteration,likehood_change)
-        visual_frequent_words(mu_log, voc, topN=20)
+        #Frequent_words(mu_log, voc)
+        #visual_frequent_words(mu_log,voc)
+        
+        printResults(mu_log, wordDict)
         print("Finished")
-
-"""
-Main 
-"""           
         
 filename1 = 'nips/nips.libsvm'
 filename2 = "nips/nips.vocab"
 voc,T = preprocessor(filename1,filename2)
-
+X, wordDict = loadData(filename1,filename2)
+time_start=time.time()
 trainingmethod = EM()
 trainingmethod.main(T)
+time_end=time.time()
+print('Totally Time Cost',time_end-time_start)
+
