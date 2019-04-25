@@ -1,0 +1,11 @@
+
+Frequent words of topic 0:network model learning neural input unit function data algorithm training
+Frequent words of topic 1:network model learning data set algorithm function problem input distribution
+Frequent words of topic 2:model network learning data system input training algorithm function set
+Frequent words of topic 3:network function input neural system learning neuron output weight set
+Frequent words of topic 4:network learning unit data neural model weight input set function
+Frequent words of topic 5:network model neuron input unit learning object system neural pattern
+Frequent words of topic 6:network function set training learning algorithm data error input neural
+Frequent words of topic 7:network learning model function algorithm system unit neural control input
+Frequent words of topic 8:model cell input network system unit function visual neural field
+Frequent words of topic 9:model learning network system set neuron neural input function pattern
